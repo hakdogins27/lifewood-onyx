@@ -1,16 +1,17 @@
 {
+  "version": 2,
   "functions": {
     "app.py": {
-      "runtime": "python3.11"
+      "runtime": "python3.9"
     }
   },
   "routes": [
     {
-      "src": "^/api/(.*)", 
+      "src": "^/api/(.*)",
       "dest": "app.py"
     },
     {
-      "handle": "filesystem"  
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
