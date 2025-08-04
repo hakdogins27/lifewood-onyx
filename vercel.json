@@ -12,11 +12,11 @@
       "dest": "app.py"
     },
     {
-      "src": "/",
-      "dest": "/index.html"
+      "handle": "filesystem"
     },
     {
-      "handle": "filesystem"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
