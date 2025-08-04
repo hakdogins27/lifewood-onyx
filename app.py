@@ -41,8 +41,9 @@ except json.JSONDecodeError:
     raise ValueError("Failed to decode GOOGLE_APPLICATION_CREDENTIALS_JSON. Ensure it's a valid JSON string.")
 
 
-db = firestore.Client()
-bucket = storage.Client().bucket('lifewood-applicants-aa9bc.firebasestorage.app')
+# NEW CORRECT CODE
+db = firestore.client()
+bucket = storage.bucket('lifewood-applicants-aa9bc.firebasestorage.app')
 
 # --- Vercel Deployment Changes END ---
 
