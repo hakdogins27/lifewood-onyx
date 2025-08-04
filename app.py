@@ -10,9 +10,8 @@ from functools import wraps
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from google.cloud import firestore, storage
 import firebase_admin
-from firebase_admin import credentials, auth
+from firebase_admin import credentials, auth, firestore, storage
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
 
@@ -42,8 +41,9 @@ except json.JSONDecodeError:
 
 
 # NEW CORRECT CODE
+# NEW, CORRECT CODE
 db = firestore.client()
-bucket = storage.bucket('lifewood-applicants-aa9bc.firebasestorage.app')
+bucket = storage.bucket()
 
 # --- Vercel Deployment Changes END ---
 
