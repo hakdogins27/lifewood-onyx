@@ -4,3 +4,5 @@ __pycache__/
 firebase-credentials.jsonconfig.py
 firebase-credentials.json.DS_Store
 ._*
+config.py
+firebase-credentials.json
