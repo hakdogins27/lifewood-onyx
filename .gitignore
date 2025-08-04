@@ -6,3 +6,4 @@ firebase-credentials.json.DS_Store
 ._*
 config.py
 firebase-credentials.json
+.vercel
