@@ -596,13 +596,16 @@ const response = await fetch(endpoint, { ...defaultOptions, ...options });
                     } else if (target.matches('.delete-btn') && confirm('Delete this application permanently?')) {
                         await handleApiAction(`/api/application/${id}`, { method: 'DELETE' });
                     }
-                } else if (target.matches('.delete-btn[data-type]')) {
-                    const {type, id} = target.dataset;
-                    if (confirm(`Delete this ${type}?`)) {
-                        const result = await handleApiAction(`/api/${type}s/${id}`, { method: 'DELETE' });
-                        if (result) showToast(result.message);
+
+                    } else if (target.matches('.delete-btn[data-type]')) {
+                        const { type, id } = target.dataset;
+                            if (confirm(`Delete this ${type}?`)) {
+        // Correctly form the plural for the endpoint URL
+                        const endpoint = type === 'inquiry' ? 'inquiries' : `${type}s`;
+                        const result = await handleApiAction(`/api/${endpoint}/${id}`, { method: 'DELETE' });
+                            if (result) showToast(result.message);
+                        }
                     }
-                }
             });
 
             document.getElementById('logout-btn').addEventListener('click', () => { firebase.auth().signOut(); });
