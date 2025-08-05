@@ -19,8 +19,15 @@ from sib_api_v3_sdk.rest import ApiException
 
 # Initialize Flask app at the top level for Vercel
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "https://lifewood-onyx.vercel.app"}})
+# Replace this:
+# CORS(app, resources={r"/api/*": {"origins": "https://lifewood-onyx.vercel.app"}})
 
+# With this:
+CORS(app, resources={r"/api/*": {
+    "origins": "https://lifewood-onyx.vercel.app",
+    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "allow_headers": ["Content-Type", "Authorization"]
+}})
 
 @app.route('/api/some_endpoint')
 def some_endpoint():
@@ -51,6 +58,11 @@ bucket = storage.bucket()
 
 # --- Vercel Deployment Changes END ---
 
+@app.route('/api/<path:path>', methods=['OPTIONS'])
+def catch_all_options(path):
+    # This route's purpose is to respond to all OPTIONS preflight requests
+    # The CORS extension will handle adding the correct headers.
+    return jsonify(success=True), 200
 
 def token_required(f):
     @wraps(f)
