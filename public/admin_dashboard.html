@@ -423,91 +423,178 @@ const response = await fetch(endpoint, { ...defaultOptions, ...options });
                 if(positions) container.innerHTML += positions.map(p => `<div class="list-view-item"><span class="position-title">${p.title}</span><button class="btn btn-secondary delete-btn" data-id="${p.id}" data-type="position">Delete</button></div>`).join('');
             };
             
-            const renderInquiries = (inquiries) => {
-                const container = viewContainers.inquiries;
-                container.innerHTML = !inquiries || inquiries.length === 0 ? '<p>There are no contact inquiries.</p>' : 
-                    inquiries.map(i => `
-                        <div class="list-view-item">
-                            <div class="item-content">
-                                <div class="inquiry-header"><span class="inquiry-name">${i.name}</span><span class="inquiry-email">(${i.email})</span></div>
-                                <p class="inquiry-message">${i.message}</p>
-                                <small class="inquiry-timestamp">${i.submittedAt?.seconds ? new Date(i.submittedAt.seconds * 1000).toLocaleString() : 'Processing...'}</small>
-                            </div>
-                            <button class="btn btn-secondary delete-btn" data-id="${i.id}" data-type="inquiry">Delete</button>
-                        </div>`
-                    ).join('');
+document.addEventListener('DOMContentLoaded', () => {
+    const contactForm = document.getElementById('contact-form');
+    const submitButton = contactForm.querySelector('button[type="submit"]');
+    const feedbackDiv = document.getElementById('form-feedback');
+    const inquiriesContainer = document.getElementById('inquiries-container'); // Assuming this is the container for your inquiries
+
+    if (contactForm) {
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            submitButton.disabled = true;
+            submitButton.textContent = 'Sending...';
+
+            const formData = new FormData(contactForm);
+            const data = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                message: formData.get('message')
             };
 
-            function listenForInquiries() {
-                if (inquiriesListener) inquiriesListener();
-                inquiriesListener = db.collection("inquiries").orderBy("submittedAt", "desc").onSnapshot(querySnapshot => {
-                    allInquiries = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderInquiries(allInquiries);
-                }, error => { console.error("Error listening for inquiries:", error); showToast("Could not connect to inquiries database.", true); });
+            try {
+                const response = await fetch('https://lifewood-onyx.vercel.app/api/inquiries', { // Update to Vercel URL
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+                
+                feedbackDiv.style.display = 'block';
+                if (response.ok) {
+                    feedbackDiv.textContent = 'Thank you! Your message has been sent.';
+                    feedbackDiv.style.backgroundColor = '#046241'; // Success green
+                    contactForm.reset();
+                } else {
+                    feedbackDiv.textContent = `Error: ${result.message}`;
+                    feedbackDiv.style.backgroundColor = '#991b1b'; // Error red
+                }
+            } catch (error) {
+                console.error('Network or Server Error:', error);
+                feedbackDiv.style.display = 'block';
+                feedbackDiv.textContent = 'Could not connect to the server. Please try again later.';
+                feedbackDiv.style.backgroundColor = '#991b1b'; // Error red
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Send Message';
             }
+        });
+    }
 
-            function listenForApplicationNotifications() {
-                const allAppsLink = document.querySelector('.nav-link[data-filter="*"]');
-                const newAppsLink = document.querySelector('.nav-link[data-filter="Received"]');
-                const allAppsBadge = document.getElementById('all-apps-notification-badge');
-                const newAppsBadge = document.getElementById('new-apps-notification-badge');
-
-                db.collection("applications").where("viewed", "==", false)
-                    .onSnapshot(snapshot => {
-                        const newCount = snapshot.size;
-                        const hasNew = newCount > 0;
-                        allAppsLink.classList.toggle('has-new-items', hasNew);
-                        newAppsLink.classList.toggle('has-new-items', hasNew);
-                        [allAppsBadge, newAppsBadge].forEach(badge => {
-                            badge.textContent = newCount;
-                            badge.style.display = hasNew ? 'inline-block' : 'none';
+    const renderInquiries = (inquiries) => {
+        const container = viewContainers.inquiries;
+        container.innerHTML = !inquiries || inquiries.length === 0 ? '<p>There are no contact inquiries.</p>' : 
+            inquiries.map(i => `
+                <div class="list-view-item">
+                    <div class="item-content">
+                        <div class="inquiry-header">
+                            <span class="inquiry-name">${i.name}</span><span class="inquiry-email">(${i.email})</span>
+                        </div>
+                        <p class="inquiry-message">${i.message}</p>
+                        <small class="inquiry-timestamp">${i.submittedAt?.seconds ? new Date(i.submittedAt.seconds * 1000).toLocaleString() : 'Processing...'}</small>
+                    </div>
+                    <button class="btn btn-secondary delete-btn" data-id="${i.id}" data-type="inquiry">Delete</button>
+                </div>`
+            ).join('');
+        
+        // Attach event listeners for the delete buttons
+        const deleteButtons = container.querySelectorAll('.delete-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const inquiryId = button.getAttribute('data-id');
+                const confirmation = confirm("Are you sure you want to delete this inquiry?");
+                if (confirmation) {
+                    try {
+                        const response = await fetch(`https://lifewood-onyx.vercel.app/api/inquiries/${inquiryId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         });
-                    }, error => console.error("Error listening for application notifications: ", error));
-            }
-
-            function listenForInquiryNotifications() {
-                const inquiriesNavLink = document.querySelector('.nav-link[data-view="inquiries"]');
-                const notificationBadge = document.getElementById('inquiries-notification-badge');
-                db.collection("inquiries").where("viewed", "==", false)
-                    .onSnapshot(snapshot => {
-                        const newCount = snapshot.size;
-                        inquiriesNavLink.classList.toggle('has-new-items', newCount > 0);
-                        notificationBadge.textContent = newCount;
-                        notificationBadge.style.display = newCount > 0 ? 'inline-block' : 'none';
-                    }, error => console.error("Error listening for inquiry notifications: ", error));
-            }
-
-            const switchView = async (linkElement) => {
-                if (!linkElement) return;
-                mainTitle.textContent = linkElement.querySelector('span').textContent;
-                document.querySelectorAll('.sidebar-nav .nav-link').forEach(l => l.classList.remove('active'));
-                linkElement.classList.add('active');
-                
-                const view = linkElement.dataset.view;
-                const filter = linkElement.dataset.filter;
-
-                Object.values(viewContainers).forEach(c => c.style.display = 'none');
-                controlsContainer.style.display = 'none';
-                if (applicationsListener) { applicationsListener(); applicationsListener = null; }
-                if (inquiriesListener) { inquiriesListener(); inquiriesListener = null; }
-                
-                if (view === 'dashboard') {
-                    viewContainers.dashboard.style.display = 'flex';
-                    listenForApplications();
-                } else if (filter) {
-                    viewContainers.applications.style.display = 'grid';
-                    controlsContainer.style.display = 'flex';
-                    await handleApiAction('/api/applications/mark-as-read', { method: 'POST' });
-                    listenForApplications();
-                } else if (view) {
-                    viewContainers[view].style.display = 'block';
-                    if (view === 'positions') fetchAndRenderPositions();
-                    if (view === 'inquiries') {
-                        await handleApiAction('/api/inquiries/mark-as-read', { method: 'POST' });
-                        listenForInquiries();
+                        const result = await response.json();
+                        
+                        if (response.ok) {
+                            // Remove the deleted inquiry from the UI
+                            const inquiryElement = button.closest('.list-view-item');
+                            inquiryElement.remove();
+                        } else {
+                            alert('Failed to delete inquiry: ' + result.message);
+                        }
+                    } catch (error) {
+                        console.error('Error deleting inquiry:', error);
+                        alert('Failed to delete inquiry. Please try again later.');
                     }
                 }
-            };
+            });
+        });
+    };
+
+    function listenForInquiries() {
+        if (inquiriesListener) inquiriesListener();
+        inquiriesListener = db.collection("inquiries").orderBy("submittedAt", "desc").onSnapshot(querySnapshot => {
+            allInquiries = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderInquiries(allInquiries);
+        }, error => { console.error("Error listening for inquiries:", error); showToast("Could not connect to inquiries database.", true); });
+    }
+
+    function listenForApplicationNotifications() {
+        const allAppsLink = document.querySelector('.nav-link[data-filter="*"]');
+        const newAppsLink = document.querySelector('.nav-link[data-filter="Received"]');
+        const allAppsBadge = document.getElementById('all-apps-notification-badge');
+        const newAppsBadge = document.getElementById('new-apps-notification-badge');
+
+        db.collection("applications").where("viewed", "==", false)
+            .onSnapshot(snapshot => {
+                const newCount = snapshot.size;
+                const hasNew = newCount > 0;
+                allAppsLink.classList.toggle('has-new-items', hasNew);
+                newAppsLink.classList.toggle('has-new-items', hasNew);
+                [allAppsBadge, newAppsBadge].forEach(badge => {
+                    badge.textContent = newCount;
+                    badge.style.display = hasNew ? 'inline-block' : 'none';
+                });
+            }, error => console.error("Error listening for application notifications: ", error));
+    }
+
+    function listenForInquiryNotifications() {
+        const inquiriesNavLink = document.querySelector('.nav-link[data-view="inquiries"]');
+        const notificationBadge = document.getElementById('inquiries-notification-badge');
+        db.collection("inquiries").where("viewed", "==", false)
+            .onSnapshot(snapshot => {
+                const newCount = snapshot.size;
+                inquiriesNavLink.classList.toggle('has-new-items', newCount > 0);
+                notificationBadge.textContent = newCount;
+                notificationBadge.style.display = newCount > 0 ? 'inline-block' : 'none';
+            }, error => console.error("Error listening for inquiry notifications: ", error));
+    }
+
+    const switchView = async (linkElement) => {
+        if (!linkElement) return;
+        mainTitle.textContent = linkElement.querySelector('span').textContent;
+        document.querySelectorAll('.sidebar-nav .nav-link').forEach(l => l.classList.remove('active'));
+        linkElement.classList.add('active');
+        
+        const view = linkElement.dataset.view;
+        const filter = linkElement.dataset.filter;
+
+        Object.values(viewContainers).forEach(c => c.style.display = 'none');
+        controlsContainer.style.display = 'none';
+        if (applicationsListener) { applicationsListener(); applicationsListener = null; }
+        if (inquiriesListener) { inquiriesListener(); inquiriesListener = null; }
+        
+        if (view === 'dashboard') {
+            viewContainers.dashboard.style.display = 'flex';
+            listenForApplications();
+        } else if (filter) {
+            viewContainers.applications.style.display = 'grid';
+            controlsContainer.style.display = 'flex';
+            await handleApiAction('/api/applications/mark-as-read', { method: 'POST' });
+            listenForApplications();
+        } else if (view) {
+            viewContainers[view].style.display = 'block';
+            if (view === 'positions') fetchAndRenderPositions();
+            if (view === 'inquiries') {
+                await handleApiAction('/api/inquiries/mark-as-read', { method: 'POST' });
+                listenForInquiries();
+            }
+        }
+    };
+
+});
+
 
             closeBtn.onclick = () => interviewModal.style.display = 'none';
             window.onclick = (e) => { if (e.target == interviewModal) interviewModal.style.display = 'none'; };
