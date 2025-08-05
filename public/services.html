@@ -10,34 +10,32 @@
   <link rel="stylesheet" href="/style.css">
   <style>
     /* === DEFINITIVE FIX FOR BROWSER AUTOFILL STYLES === */
-/* Forcefully override browser autofill styles */
-/* Forcefully override browser autofill styles */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-    background-color: #0e1e15 !important; /* Correct background color */
-    color: #f3f4f6 !important; /* Text color */
-    box-shadow: 0 0 0 30px #0e1e15 inset !important; /* Matching the input background */
-    -webkit-box-shadow: 0 0 0 30px #0e1e15 inset !important; /* Safari specific */
-    -webkit-text-fill-color: #f3f4f6 !important; /* Text color inside autofill */
-    caret-color: #f3f4f6 !important; /* Optional: caret matches the text color */
-    transition: background-color 5000s ease-in-out 0s; /* Forces the background to stay */
-}
+    /* Forcefully override browser autofill styles */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+        background-color: #0e1e15 !important; /* Correct background color */
+        color: #f3f4f6 !important; /* Text color */
+        box-shadow: 0 0 0 30px #0e1e15 inset !important; /* Matching the input background */
+        -webkit-box-shadow: 0 0 0 30px #0e1e15 inset !important; /* Safari specific */
+        -webkit-text-fill-color: #f3f4f6 !important; /* Text color inside autofill */
+        caret-color: #f3f4f6 !important; /* Optional: caret matches the text color */
+        transition: background-color 5000s ease-in-out 0s; /* Forces the background to stay */
+    }
 
-/* Ensure normal input fields don’t change when autofill is applied */
-input {
-    background-color: #0e1e15 !important; /* Background color of input fields */
-    color: #f3f4f6 !important; /* Text color */
-}
-
+    /* Ensure normal input fields don’t change when autofill is applied */
+    input {
+        background-color: #0e1e15 !important; /* Background color of input fields */
+        color: #f3f4f6 !important; /* Text color */
+    }
   </style>
 </head>
 <body>
   <canvas id="particle-canvas"></canvas>
 
   <header class="header">
-            <a href="admin_login.html" class="secret-admin-link"></a>
+    <a href="admin_login.html" class="secret-admin-link"></a>
     <nav class="navbar container">
       <a href="index.html" class="logo">
         <svg class="logo-icon" width="24" height="42" viewBox="0 0 24 42" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 0L23.5962 10.5V31.5L12 42L0.403847 31.5V10.5L12 0Z" fill="currentColor"/></svg>
@@ -263,13 +261,13 @@ input {
     document.addEventListener('DOMContentLoaded', () => {
       const applicationForm = document.getElementById('application-form');
       const submitButton = document.getElementById('submit-application-btn');
-      
       const positionSelect = document.getElementById('position');
 
       async function populatePositions() {
           positionSelect.innerHTML = '<option value="" disabled selected>Loading Positions...</option>';
           try {
-              const response = await fetch('http://127.0.0.1:5000/api/positions');
+              // CORRECTED: Use a relative URL for the API call
+              const response = await fetch('/api/positions');
               if (!response.ok) throw new Error('Network response was not ok');
               const positions = await response.json();
               positionSelect.innerHTML = ''; 
@@ -295,6 +293,7 @@ input {
       if (openModalBtn) {
           openModalBtn.addEventListener('click', (e) => {
               e.preventDefault();
+              // Populate positions when the modal is opened
               populatePositions();
           });
       }
@@ -308,7 +307,8 @@ input {
           const formData = new FormData(applicationForm);
 
           try {
-            const response = await fetch('http://127.0.0.1:5000/api/apply', {
+            // CORRECTED: Use a relative URL for the API call
+            const response = await fetch('/api/apply', {
               method: 'POST',
               body: formData,
             });
@@ -326,13 +326,14 @@ input {
             }
           } catch (error) {
             console.error('Network or Server Error:', error);
-            alert('Could not connect to the server. Please make sure the backend is running and try again.');
+            alert('Could not connect to the server. Please check your internet connection and try again.');
           } finally {
             submitButton.disabled = false;
             submitButton.textContent = 'Submit Application';
           }
         });
       }
+
       const fileInput = document.getElementById('resumeFile');
       const fileNameDisplay = document.getElementById('file-name-display');
       const removeFileBtn = document.getElementById('remove-file-btn');
@@ -347,6 +348,7 @@ input {
           }
         });
       }
+
       if(removeFileBtn) {
         removeFileBtn.addEventListener('click', () => {
           fileInput.value = '';
