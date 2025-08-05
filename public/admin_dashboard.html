@@ -32,11 +32,9 @@
             border-radius: 12px;
             display: none;
         }
-        /* Renamed for clarity: applies to both apps and inquiries */
         .sidebar-nav .nav-link.has-new-items {
             font-weight: 800;
         }
-
         .sidebar-footer { margin-top: auto; }
         .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; }
         #main-title { font-size: 32px; font-weight: 800; color: var(--brand-green); margin: 0; }
@@ -111,11 +109,6 @@
         #toast.success { background-color: var(--success-bg); color: var(--success-text); }
         #toast.error { background-color: var(--danger-bg); color: var(--danger-text); }
         #dashboard-view { display: flex; flex-direction: column; gap: 24px; }
-        .rating-stars { display: flex; cursor: pointer; gap: 4px; }
-        .rating-stars .star { font-size: 24px; color: var(--border-color); transition: color 0.2s; }
-        .rating-stars .star:hover { color: #ffd99a; }
-        .rating-stars .star.filled { color: var(--brand-primary); }
-        .save-rating-btn { margin-top: 10px; }
         .dashboard-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; background-color: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; }
         .summary-item .count { display: block; font-size: 28px; font-weight: 800; color: var(--brand-green); }
         .summary-item .label { font-size: 14px; font-weight: 600; color: var(--text-secondary); text-transform: capitalize; }
@@ -253,10 +246,23 @@
                     defaultOptions.headers['Content-Type'] = 'application/json';
                 }
                 try {
-const response = await fetch(endpoint, { ...defaultOptions, ...options });
-                    if (!response.ok) { const err = await response.json(); throw new Error(err.message || 'API error'); }
-                    return response.json();
-                } catch (error) { showToast(error.message, true); return null; }
+                    const response = await fetch(endpoint, { ...defaultOptions, ...options });
+                    if (!response.ok) { 
+                        const errText = await response.text();
+                        try {
+                            const errJson = JSON.parse(errText);
+                            throw new Error(errJson.message || 'API error');
+                        } catch {
+                            throw new Error(errText || 'An unknown API error occurred.');
+                        }
+                    }
+                    // Handle cases where the response might be empty (e.g., a 204 No Content)
+                    const text = await response.text();
+                    return text ? JSON.parse(text) : {};
+                } catch (error) { 
+                    showToast(error.message, true); 
+                    return null; 
+                }
             };
             
             const populatePositionFilter = (apps) => {
@@ -323,9 +329,7 @@ const response = await fetch(endpoint, { ...defaultOptions, ...options });
                     const portfolioLink = app.resumeLink ? `<a href="${app.resumeLink.startsWith('http') ? '' : '//'}${app.resumeLink}" target="_blank" rel="noopener noreferrer">${app.resumeLink}</a>` : '<span class="placeholder-text">Not Provided</span>';
                     const uploadedResumeLink = app.uploadedResumeUrl ? `<a href="${app.uploadedResumeUrl}" target="_blank" rel="noopener noreferrer">View Uploaded Resume</a>` : '<span class="placeholder-text">Not Provided</span>';
                     const availability = (app.startTime && app.endTime) ? `${app.startTime} to ${app.endTime}` : '<span class="placeholder-text">Not Provided</span>';
-                    const rating = app.rating || 0;
-                    let starsHTML = Array.from({length: 5}, (_, i) => `<span class="star ${i < rating ? 'filled' : ''}" data-value="${i + 1}">★</span>`).join('');
-
+                    
                     const card = document.createElement('div');
                     card.className = 'applicant-card';
                     card.dataset.id = app.id;
@@ -354,7 +358,6 @@ const response = await fetch(endpoint, { ...defaultOptions, ...options });
                                 </div>
                                 <div class="details-admin-panel">
                                     <div class="admin-panel-item"><p><strong>Submitted</strong><span>${submittedDate}</span></p></div>
-                                    <div class="admin-panel-item"><label>Rate Applicant</label><div class="rating-stars" data-id="${app.id}" data-current-rating="${rating}">${starsHTML}</div><button class="btn btn-secondary save-rating-btn">Save Rating</button></div>
                                     <div class="admin-panel-item"><label for="notes-${app.id}">Notes</label><textarea id="notes-${app.id}" placeholder="Add private notes...">${app.notes || ''}</textarea></div>
                                     <div class="admin-panel-item"><label for="status-select-${app.id}">Change Status</label><select id="status-select-${app.id}">${statusOptions.map(o => `<option value="${o}" ${currentStatus === o ? 'selected' : ''}>${o}</option>`).join('')}</select></div>
                                     <div class="admin-panel-actions"><button class="btn btn-secondary save-notes-btn">Save Notes</button><button class="btn btn-primary save-status-btn">Save Status</button><button class="btn btn-text-danger delete-btn">Delete Application</button></div>
@@ -569,11 +572,6 @@ const response = await fetch(endpoint, { ...defaultOptions, ...options });
                         const result = await handleApiAction('/api/positions', { method: 'POST', body: JSON.stringify({ title: titleInput.value }) });
                         if(result) { showToast(result.message); fetchAndRenderPositions(); }
                     }
-                } else if (target.matches('.rating-stars .star')) {
-                    const ratingContainer = target.parentElement;
-                    const ratingValue = target.dataset.value;
-                    ratingContainer.dataset.currentRating = ratingValue;
-                    ratingContainer.querySelectorAll('.star').forEach(s => s.classList.toggle('filled', s.dataset.value <= ratingValue));
                 } else if (target.closest('.applicant-card')) {
                     const card = target.closest('.applicant-card');
                     const id = card.dataset.id;
@@ -589,31 +587,23 @@ const response = await fetch(endpoint, { ...defaultOptions, ...options });
                     } else if (target.matches('.save-notes-btn')) {
                         const result = await handleApiAction(`/api/application/${id}`, { method: 'PUT', body: JSON.stringify({ notes: card.querySelector(`#notes-${id}`).value }) });
                         if (result) showToast(result.message);
-                    } else if (target.matches('.save-rating-btn')) {
-                        const rating = parseInt(card.querySelector('.rating-stars').dataset.currentRating, 10);
-                        const result = await handleApiAction(`/api/application/${id}`, { method: 'PUT', body: JSON.stringify({ rating: rating }) });
-                        if(result) showToast(result.message);
                     } else if (target.matches('.delete-btn') && confirm('Delete this application permanently?')) {
                         await handleApiAction(`/api/application/${id}`, { method: 'DELETE' });
                     }
-
-                    } else if (target.matches('.delete-btn[data-type]')) {
-                        const { type, id } = target.dataset;
-                            if (confirm(`Delete this ${type}?`)) {
-        // Correctly form the plural for the endpoint URL
+                } else if (target.matches('.delete-btn[data-type]')) {
+                    const { type, id } = target.dataset;
+                    if (confirm(`Delete this ${type}?`)) {
                         const endpoint = type === 'inquiry' ? 'inquiries' : `${type}s`;
                         const result = await handleApiAction(`/api/${endpoint}/${id}`, { method: 'DELETE' });
-                            if (result) showToast(result.message);
-                        }
+                        if (result) showToast(result.message);
                     }
+                }
             });
 
             document.getElementById('logout-btn').addEventListener('click', () => { firebase.auth().signOut(); });
             
-            // Start both notification listeners
             listenForApplicationNotifications();
             listenForInquiryNotifications();
-            // Initial view load
             switchView(document.querySelector('.sidebar-nav .nav-link.active'));
         }
     </script>
