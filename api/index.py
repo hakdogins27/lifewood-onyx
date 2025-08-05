@@ -337,9 +337,11 @@ def mark_inquiries_as_read():
 @token_required
 def delete_inquiry(inquiry_id):
     try:
+        print(f"Attempting to delete inquiry with ID: {inquiry_id}")
         db.collection('inquiries').document(inquiry_id).delete()
         return jsonify({"message": "Inquiry deleted."}), 200
-    except Exception as e: 
+    except Exception as e:
+        print(f"Error deleting inquiry: {e}")
         return jsonify({"message": f"Could not delete inquiry: {e}"}), 500
 
 
