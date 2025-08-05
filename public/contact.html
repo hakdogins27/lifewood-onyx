@@ -11,29 +11,29 @@
 </head>
 <style>
   input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-    background-color: rgba(0,0,0,0.2) !important; /* Correct background color */
-    color: #f3f4f6 !important; /* Text color */
-    box-shadow: 0 0 0 30px rgba(0,0,0,0.2) inset !important; /* Matching the input background */
-    -webkit-box-shadow: 0 0 0 30px rgba(0,0,0,0.2) inset !important; /* Safari specific */
-    -webkit-text-fill-color: #f3f4f6 !important; /* Text color inside autofill */
-    caret-color: #f3f4f6 !important; /* Optional: caret matches the text color */
-    transition: background-color 5000s ease-in-out 0s; /* Forces the background to stay */
-}
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+      background-color: rgba(0,0,0,0.2) !important; /* Correct background color */
+      color: #f3f4f6 !important; /* Text color */
+      box-shadow: 0 0 0 30px rgba(0,0,0,0.2) inset !important; /* Matching the input background */
+      -webkit-box-shadow: 0 0 0 30px rgba(0,0,0,0.2) inset !important; /* Safari specific */
+      -webkit-text-fill-color: #f3f4f6 !important; /* Text color inside autofill */
+      caret-color: #f3f4f6 !important; /* Optional: caret matches the text color */
+      transition: background-color 5000s ease-in-out 0s; /* Forces the background to stay */
+  }
 
-/* Ensure normal input fields don’t change when autofill is applied */
-input {
-    background-color: rgba(0,0,0,0.2) !important; /* Background color of input fields */
-    color: #f3f4f6 !important; /* Text color */
-}
+  /* Ensure normal input fields don’t change when autofill is applied */
+  input {
+      background-color: rgba(0,0,0,0.2) !important; /* Background color of input fields */
+      color: #f3f4f6 !important; /* Text color */
+  }
 </style>
 <body>
   <canvas id="particle-canvas"></canvas>
 
   <header class="header">
-            <a href="admin_login.html" class="secret-admin-link"></a>
+    <a href="admin_login.html" class="secret-admin-link"></a>
     <nav class="navbar container">
       <a href="index.html" class="logo">
         <svg class="logo-icon" width="24" height="42" viewBox="0 0 24 42" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 0L23.5962 10.5V31.5L12 42L0.403847 31.5V10.5L12 0Z" fill="currentColor"/></svg>
@@ -86,16 +86,16 @@ input {
             <p><a href="tel:+1-800-555-DATA">+1 (800) 555-DATA</a></p>
           </div>
         </div>
-<form id="contact-form" class="contact-form" novalidate action="https://lifewood-onyx.vercel.app/api/inquiries" method="POST">
-  <div id="form-feedback" class="form-feedback" style="display:none; padding: 1rem; margin-bottom: 1.5rem; border-radius: 6px; text-align: center; color: white;"></div>
-  <div class="form-grid">
-    <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" name="name" required></div>
-    <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" name="email" required></div>
-  </div>
-  <div class="form-group"><label for="message">Message</label><textarea id="message" name="message" rows="5" required></textarea></div>
-  <div class="form-submit"><button type="submit" class="btn btn-primary">Send Message</button></div>
-</form>
-
+        <form id="contact-form" class="contact-form" novalidate>
+          <div id="form-feedback" class="form-feedback" style="display:none; padding: 1rem; margin-bottom: 1.5rem; border-radius: 6px; text-align: center; color: white;"></div>
+          <div class="form-grid">
+            <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" name="name" required></div>
+            <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" name="email" required></div>
+          </div>
+          <div class="form-group"><label for="message">Message</label><textarea id="message" name="message" rows="5" required></textarea></div>
+          <div class="form-submit"><button type="submit" class="btn btn-primary">Send Message</button></div>
+        </form>
+      </div>
     </section>
   </main>
 
@@ -138,7 +138,8 @@ input {
           };
 
           try {
-            const response = await fetch('http://127.0.0.1:5000/api/inquiries', {
+            // CORRECTED: Use a relative URL for the API call
+            const response = await fetch('/api/inquiries', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
