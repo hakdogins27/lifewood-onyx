@@ -21,6 +21,9 @@ from sib_api_v3_sdk.rest import ApiException
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/api/some_endpoint')
+def some_endpoint():
+    return jsonify({"message": "Success"})
 # Securely load Firebase credentials from Vercel environment variable
 cred_json_str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 if not cred_json_str:
