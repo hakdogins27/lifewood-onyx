@@ -19,7 +19,8 @@ from sib_api_v3_sdk.rest import ApiException
 
 # Initialize Flask app at the top level for Vercel
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "https://lifewood-onyx.vercel.app"}})
+
 
 @app.route('/api/some_endpoint')
 def some_endpoint():
