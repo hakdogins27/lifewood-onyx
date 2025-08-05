@@ -61,73 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   fadeElements.forEach(el => fadeObserver.observe(el));
 
-  // =================================================================
-  // == REVISED CONTACT FORM LOGIC (REPLACES YOUR OLD VALIDATION) ==
-  // =================================================================
-  const contactForm = document.getElementById('contact-form');
-  if (contactForm) {
-    const feedbackDiv = document.getElementById('form-feedback');
-    const submitButton = contactForm.querySelector('button[type="submit"]');
-
-    contactForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const originalButtonText = submitButton.textContent;
-      submitButton.disabled = true;
-      submitButton.textContent = 'Sending...';
-
-      const data = {
-        name: document.getElementById('name').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        message: document.getElementById('message').value.trim(),
-      };
-
-      if (!data.name || !data.email || !data.message) {
-          feedbackDiv.textContent = 'Please fill out all fields before submitting.';
-          feedbackDiv.style.backgroundColor = '#dc2626'; // Error red
-          feedbackDiv.style.display = 'block';
-
-          submitButton.disabled = false;
-          submitButton.textContent = originalButtonText;
-          return;
-      }
-
-      try {
-        // CORRECTED: Point to the correct /api/inquiries endpoint
-        const response = await fetch('/api/inquiries', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-
-        const result = await response.json();
-        feedbackDiv.textContent = result.message;
-        feedbackDiv.style.display = 'block';
-
-        if (response.ok) {
-          feedbackDiv.style.backgroundColor = '#046241'; // Success green
-          contactForm.reset();
-        } else {
-          throw new Error(result.message);
-        }
-      } catch (error) {
-        feedbackDiv.textContent = error.message || 'A network error occurred.';
-        feedbackDiv.style.backgroundColor = '#dc2626';
-      } finally {
-        setTimeout(() => {
-          submitButton.disabled = false;
-          submitButton.textContent = originalButtonText;
-          if (feedbackDiv.style.backgroundColor !== '#046241') {
-              feedbackDiv.style.display = 'none';
-          }
-        }, 3000);
-      }
-    });
-  }
-  // ===================================================
-  // == END OF REVISED CONTACT FORM LOGIC ==
-  // ===================================================
-
   // --- AI PARTICLE NETWORK ANIMATION ---
   const canvas = document.getElementById('particle-canvas');
   if (canvas) {
@@ -242,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
     animate();
   }
 
-  // --- APPLICATION MODAL ---
+  // --- APPLICATION MODAL (from services.html) ---
   const openModalBtn = document.getElementById('open-apply-modal-btn');
   const modal = document.getElementById('application-modal');
   const closeModalBtn = document.getElementById('close-modal-btn');
@@ -302,6 +235,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const formData = new FormData(applicationForm);
       
+      // NOTE: This form's submission logic is now handled in services.html
+      // This is just a placeholder for the visual feedback
       setTimeout(() => {
         alert('Thank you for your application! We will be in touch shortly.');
         
