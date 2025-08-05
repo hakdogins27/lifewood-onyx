@@ -86,16 +86,16 @@ input {
             <p><a href="tel:+1-800-555-DATA">+1 (800) 555-DATA</a></p>
           </div>
         </div>
-        <form id="contact-form" class="contact-form" novalidate>
-          <div id="form-feedback" class="form-feedback" style="display:none; padding: 1rem; margin-bottom: 1.5rem; border-radius: 6px; text-align: center; color: white;"></div>
-          <div class="form-grid">
-            <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" name="name" required></div>
-            <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" name="email" required></div>
-          </div>
-          <div class="form-group"><label for="message">Message</label><textarea id="message" name="message" rows="5" required></textarea></div>
-          <div class="form-submit"><button type="submit" class="btn btn-primary">Send Message</button></div>
-        </form>
-      </div>
+<form id="contact-form" class="contact-form" novalidate action="https://lifewood-onyx.vercel.app/api/inquiries" method="POST">
+  <div id="form-feedback" class="form-feedback" style="display:none; padding: 1rem; margin-bottom: 1.5rem; border-radius: 6px; text-align: center; color: white;"></div>
+  <div class="form-grid">
+    <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" name="name" required></div>
+    <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" name="email" required></div>
+  </div>
+  <div class="form-group"><label for="message">Message</label><textarea id="message" name="message" rows="5" required></textarea></div>
+  <div class="form-submit"><button type="submit" class="btn btn-primary">Send Message</button></div>
+</form>
+
     </section>
   </main>
 
