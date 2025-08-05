@@ -339,6 +339,8 @@ def delete_inquiry(inquiry_id):
     try:
         db.collection('inquiries').document(inquiry_id).delete()
         return jsonify({"message": "Inquiry deleted."}), 200
-    except Exception as e: return jsonify({"message": f"Could not delete inquiry: {e}"}), 500
+    except Exception as e: 
+        return jsonify({"message": f"Could not delete inquiry: {e}"}), 500
+
 
 # The if __name__ == '__main__': block is removed because Vercel handles the server execution.
