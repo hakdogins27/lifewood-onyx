@@ -344,5 +344,4 @@ def delete_inquiry(inquiry_id):
         print(f"Error deleting inquiry: {e}")
         return jsonify({"message": f"Could not delete inquiry: {e}"}), 500
 
-
 # The if __name__ == '__main__': block is removed because Vercel handles the server execution.
